@@ -155,7 +155,7 @@ def main(training: Training) -> None:
     print(info_message.get_message())
 
 
-def search_errors_in_values(name, list_with_var):
+def search_errors_in_values(name: str, list_with_var: list) -> bool:
     """Функция поиска некорректных значений"""
     NORMAL_WIDGHT_5_YERS_OLD_CHILDREN_KG = 14
     MAX_WIDGHT_PEOPLE_KG = 160
@@ -173,8 +173,8 @@ def search_errors_in_values(name, list_with_var):
         if not (isinstance(i, int) or isinstance(i, float)) or i < 0:
             result = False
     # Если имеется некорректная переменная по весу
-    if (list_with_var[2] < NORMAL_WIDGHT_5_YERS_OLD_CHILDREN_KG or
-            list_with_var[2] > MAX_WIDGHT_PEOPLE_KG):
+    if (list_with_var[2] < NORMAL_WIDGHT_5_YERS_OLD_CHILDREN_KG
+            or list_with_var[2] > MAX_WIDGHT_PEOPLE_KG):
         result = False
     # Если имеется некорректная переменная по росту
     if name == 'WLK' and (list_with_var[3] < MIN_HEIGHT_CM
