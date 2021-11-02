@@ -42,18 +42,16 @@ class Training:
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        distance = (self.action * self.LEN_STEP) / self.M_IN_KM
-        return distance
+        return (self.action * self.LEN_STEP) / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
-        mean_speed = Training.get_distance(self) / self.duration
-
-        return mean_speed
+        return self.get_distance() / self.duration
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных килокалорий."""
-        pass
+        raise NotImplementedError(
+            'get_spent_calories определяется в наследниках.')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -68,17 +66,17 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
+    COEFF_CALORIE_1 = 18
+    COEFF_CALORIE_2 = 20
 
     def __init__(self, action: int, duration: float, weight: float) -> None:
         super().__init__(action, duration, weight)
-        self.coeff_calorie_1 = 18
-        self.coeff_calorie_2 = 20
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        spent_calories = ((self.coeff_calorie_1
-                           * Training.get_mean_speed(self)
-                           - self.coeff_calorie_2) * self.weight
+        spent_calories = ((self.COEFF_CALORIE_1
+                           * self.get_mean_speed()
+                           - self.COEFF_CALORIE_2) * self.weight
                           / self.M_IN_KM * (self.duration
                                             * self.M_IN_HOUR))
         return spent_calories
@@ -86,6 +84,8 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
+    COEFF_CALORIE_1 = 0.035
+    COEFF_CALORIE_2 = 0.029
 
     def __init__(self, action: int,
                  duration: float,
@@ -93,15 +93,13 @@ class SportsWalking(Training):
                  height: float) -> None:
         super().__init__(action, duration, weight)
         self.height = height
-        self.coeff_calorie_1 = 0.035
-        self.coeff_calorie_2 = 0.029
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        spent_calories = ((self.coeff_calorie_1 * self.weight
-                           + (Training.get_mean_speed(self) ** 2
+        spent_calories = ((self.COEFF_CALORIE_1 * self.weight
+                           + (self.get_mean_speed() ** 2
                               // self.height)
-                           * self.coeff_calorie_2 * self.weight)
+                           * self.COEFF_CALORIE_2 * self.weight)
                           * (self.duration * self.M_IN_HOUR))
         return spent_calories
 
@@ -109,6 +107,8 @@ class SportsWalking(Training):
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP = 1.38
+    COEFF_CALORIE_1 = 1.1
+    COEFF_CALORIE_2 = 2.0
 
     def __init__(self, action: int,
                  duration: float,
@@ -118,8 +118,6 @@ class Swimming(Training):
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
         self.count_pool = count_pool
-        self.coeff_calorie_1 = 1.1
-        self.coeff_calorie_2 = 2.0
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
@@ -134,9 +132,9 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        spent_calories = ((Swimming.get_mean_speed(self)
-                           + self.coeff_calorie_1)
-                          * self.coeff_calorie_2 * self.weight)
+        spent_calories = ((self.get_mean_speed()
+                           + self.COEFF_CALORIE_1)
+                          * self.COEFF_CALORIE_2 * self.weight)
         return spent_calories
 
 
@@ -157,16 +155,47 @@ def main(training: Training) -> None:
     print(info_message.get_message())
 
 
+def search_errors_in_values(name, list_with_var):
+    """Функция поиска некорректных значений"""
+    NORMAL_WIDGHT_5_YERS_OLD_CHILDREN_KG = 14
+    MAX_WIDGHT_PEOPLE_KG = 160
+    MIN_HEIGHT_CM = 50
+    MAX_HEIGHT_CM = 250
+    result = True
+    available_values = {'SWM': 5, 'RUN': 3, 'WLK': 4}
+    # Если ключ или количесто элементов ключа не совпадают
+    if (name not in available_values
+            or available_values[name]
+            != len(data)):
+        result = False
+    # Если имеется тип не int или float, а так же отрицательное значение
+    for i in list_with_var:
+        if not (isinstance(i, int) or isinstance(i, float)) or i < 0:
+            result = False
+    # Если имеется некорректная переменная по весу
+    if (list_with_var[2] < NORMAL_WIDGHT_5_YERS_OLD_CHILDREN_KG or
+            list_with_var[2] > MAX_WIDGHT_PEOPLE_KG):
+        result = False
+    # Если имеется некорректная переменная по росту
+    if name == 'WLK' and (list_with_var[3] < MIN_HEIGHT_CM
+                          or list_with_var[3] > MAX_HEIGHT_CM):
+        result = False
+    return result
+
+
 if __name__ == '__main__':
     packages = [
-        ('SWM', [720, 1, 80, 25, 50]),
-        ('RUN', [15000, 1, 75]),
+        ('SWM', [720, 5, 80, 25, 50]),
+        ('RUN', [5000, 1, 70]),
         ('WLK', [9000, 1, 75, 180]),
     ]
     available_values = {'SWM': 5, 'RUN': 3, 'WLK': 4}
     for workout_type, data in packages:
-        if (workout_type in available_values
-                and available_values[workout_type]
-                == len(data)):
+        if (search_errors_in_values(workout_type, data)):
             training = read_package(workout_type, data)
             main(training)
+        else:
+            print("Возникла ошибка, проверьте, пожалуйста,"
+                  "корректность введенных данных и повторите попытку."
+                  "В противном случае еще раз ознакомьтесь с руководством"
+                  "пользователя.")
