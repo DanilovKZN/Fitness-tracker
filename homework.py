@@ -1,5 +1,4 @@
 """Реализация фитнес трекера"""
-import sys
 
 
 class InfoMessage:
@@ -42,11 +41,7 @@ class Training:
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        # Вдруг баг системный
-        try:
-            return (self.action * self.LEN_STEP) / self.M_IN_KM
-        except ZeroDivisionError:
-            sys.exit('Системная ошибка. M_IN_KM не может быть меньше 1.')
+        return (self.action * self.LEN_STEP) / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -64,7 +59,6 @@ class Training:
                            self.get_distance(),
                            self.get_mean_speed(),
                            self.get_spent_calories())
-
         return info
 
 
@@ -78,17 +72,12 @@ class Running(Training):
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        # Вдруг баг системный
-        try:
-            spent_calories = ((self.COEFF_CALORIE_1
-                               * self.get_mean_speed()
-                               - self.COEFF_CALORIE_2) * self.weight
-                              / self.M_IN_KM * (self.duration
-                                                * self.M_IN_HOUR))
-            return spent_calories
-        except ZeroDivisionError:
-            sys.exit('Системная ошибка. M_IN_KM и M_IN_HOUR'
-                     ' не могут быть меньше 1.')
+        spent_calories = ((self.COEFF_CALORIE_1
+                           * self.get_mean_speed()
+                           - self.COEFF_CALORIE_2) * self.weight
+                          / self.M_IN_KM * (self.duration
+                                            * self.M_IN_HOUR))
+        return spent_calories
 
 
 class SportsWalking(Training):
@@ -130,22 +119,14 @@ class Swimming(Training):
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        # Вдруг баг системный
-        try:
-            distance = (self.action * self.LEN_STEP) / self.M_IN_KM
-            return distance
-        except ZeroDivisionError:
-            sys.exit('Системная ошибка. M_IN_KM не может быть меньше 1.')
+        distance = (self.action * self.LEN_STEP) / self.M_IN_KM
+        return distance
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
-        # Вдруг баг системный
-        try:
-            mean_speed = (self.length_pool * self.count_pool
-                          / self.M_IN_KM / self.duration)
-            return mean_speed
-        except ZeroDivisionError:
-            sys.exit('Системная ошибка. M_IN_KM не может быть меньше 1.')
+        mean_speed = (self.length_pool * self.count_pool
+                      / self.M_IN_KM / self.duration)
+        return mean_speed
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
@@ -196,7 +177,7 @@ def search_errors_in_values(name: str, list_with_var: list) -> bool:
 
     # Если имеется тип не int или float, а так же отрицательное значение
     # Хотя и это тоже системный баг
-    for c, i in enumerate(list_with_var, start=0):
+    for c, i in enumerate(list_with_var):
         if not (isinstance(i, int) or isinstance(i, float)) or i <= 0:
             buffer = available_values[name]
             print(f'Значение {buffer[c]} не может быть строкой,'
@@ -204,30 +185,33 @@ def search_errors_in_values(name: str, list_with_var: list) -> bool:
             print('Введите значения снова или перезагрузите устройство.')
             return False
     # Если имеется некорректная переменная по весу
-    if (list_with_var[2] < NORMAL_WEIGHT_5_YERS_OLD_CHILDREN_KG
-            or list_with_var[2] > MAX_WEIGHT_PEOPLE_KG):
-        print(f'Получен вес {list_with_var[2]} кг. '
+    weight = list_with_var[2]
+    if (weight < NORMAL_WEIGHT_5_YERS_OLD_CHILDREN_KG
+            or weight > MAX_WEIGHT_PEOPLE_KG):
+        print(f'Получен weight {weight} кг. '
               'Вес пользователя не должен быть '
               'меньше 14 кг,'
               'а также больше 160 кг. '
               'Повторите, пожалуйста, попытку.')
         return False
     # Если имеется некорректная переменная по росту
-    if name == 'WLK' and (list_with_var[3] < MIN_HEIGHT_CM
-                          or list_with_var[3] > MAX_HEIGHT_CM):
-        print(f'Получен рост {list_with_var[3]} см. '
-              'Рост пользователя не должен быть '
-              'меньше 50 см '
-              'и больше 250 см. '
-              'Повторите, пожалуйста, попытку.')
-        return False
+    if name == 'WLK':
+        height = list_with_var[3]
+        if (height < MIN_HEIGHT_CM
+                or height > MAX_HEIGHT_CM):
+            print(f'Получен height {height} см. '
+                  'Рост пользователя не должен быть '
+                  'меньше 50 см '
+                  'и больше 250 см. '
+                  'Повторите, пожалуйста, попытку.')
+            return False
     return True
 
 
 if __name__ == '__main__':
     packages = [
         ('SWM', [1200, 2, 80, 50, 25]),
-        ('RUN', [5000, 1, 70]),
+        ('RUN', [5000, 1, 30]),
         ('WLK', [9000, 1, 75, 180]),
     ]
     for workout_type, data in packages:
